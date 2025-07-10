@@ -23,4 +23,10 @@ constexpr uint8_t TRIG_PIN = 5;
 /** @brief Ultrasonic sensor echo pin */
 constexpr uint8_t ECHO_PIN = 4;
 
+
+// === Pin Definitions ===
+constexpr uint8_t ONE_WIRE_BUS = 8;
+constexpr uint8_t TDS_PIN = A0;
+constexpr uint8_t PH_PIN = A1;
+
 #endif
