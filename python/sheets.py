@@ -1,28 +1,39 @@
-from logging import exception
-
 import gspread
 from google.oauth2.service_account import Credentials
 import serial
 import time
 import json
 
-scopes = [
-    "https://www.googleapis.com/auth/spreadsheets"
-]
-creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-client = gspread.authorize(creds)
-sheet_id = "1UYoE7HpYE_xK2-5zKpek_TazQJzAFXdvs_ojRwo6ctg"
-sheet = client.open_by_key(sheet_id).sheet1
+# === Config ===
+BUFFER = []
+LAST_PUSH_TIME = time.time()
+PUSH_INTERVAL_SECONDS = 60
+MAX_BUFFER = 20
+SERIAL_PORT = "COM5"
+BAUD_RATE = 9600
+SPREADSHEET_ID = "1UYoE7HpYE_xK2-5zKpek_TazQJzAFXdvs_ojRwo6ctg"
 
-if sheet.row_count == 0 or not sheet.row_values(1):
-    sheet.append_row(["Timestamp", "Temperature", "pH", "TDS", "ORP"])
-
-ser = serial.Serial("COM6", 9600)
+# === Initialize Serial ===
+ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
 time.sleep(2)
 
 print("Listening to LoRa data...")
 
+# === Push data to Google Sheets ===
+def push_to_sheet(data_batch):
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 
+    # Add header row if empty
+    if sheet.row_count == 0 or not sheet.row_values(1):
+        sheet.append_row(["Timestamp", "Temperature", "pH", "TDS", "ORP"])
+
+    sheet.append_rows(data_batch)
+    print(f"Pushed {len(data_batch)} rows to Google Sheets.")
+
+# === Main Loop ===
 while True:
     try:
         line = ser.readline().decode("utf-8").strip()
@@ -30,32 +41,34 @@ while True:
             continue
 
         data = json.loads(line)
-
-        message_str = data["message"]
-
+        message_str = data.get("message", "")
         parts = message_str.split("|")
 
         result = {}
-
         for part in parts:
             if ':' in part:
                 key, value = part.split(':', 1)
-                key = key.strip().lower()
-                value = value.strip()
-                result[key] = value
+                result[key.strip().lower()] = value.strip()
 
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{timestamp}] Received: ", data)
+        print(f"[{timestamp}] Received:", data)
 
-        sheet.append_row([
+        # Append parsed row to buffer
+        BUFFER.append([
             timestamp,
             result.get("temp", ""),
             result.get("ph", ""),
-            result.get("tds" ""),
+            result.get("tds", ""),
             result.get("orp", "")
         ])
+
+        # Push to sheet if needed
+        if len(BUFFER) >= MAX_BUFFER or (time.time() - LAST_PUSH_TIME) > PUSH_INTERVAL_SECONDS:
+            push_to_sheet(BUFFER)
+            BUFFER.clear()
+            LAST_PUSH_TIME = time.time()
 
     except json.JSONDecodeError:
         print("Malformed JSON, skipping:", line)
     except Exception as e:
-        print("Error: ", e)
+        print("Error:", e)
