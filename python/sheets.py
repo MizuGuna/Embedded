@@ -33,6 +33,18 @@ def push_to_sheet(data_batch):
     sheet.append_rows(data_batch)
     print(f"Pushed {len(data_batch)} rows to Google Sheets.")
 
+    maintain_sheet_limit(sheet, 155)
+
+# === Delete old data from Google sheets ===
+def maintain_sheet_limit(sheet, max_rows=5000, batch=100):
+    rows = sheet.get_all_values()
+    extra = len(rows) - max_rows
+    to_delete = min(extra, batch)
+    if extra > 0:
+        for _ in range(to_delete):
+            sheet.delete_rows(2)
+        print(f"Deleted {to_delete} old rows from Sheets.")
+
 # === Main Loop ===
 while True:
     try:
@@ -72,3 +84,6 @@ while True:
         print("Malformed JSON, skipping:", line)
     except Exception as e:
         print("Error:", e)
+    except KeyboardInterrupt:
+        print("Script Stopped by user, Exiting...")
+        ser.close()
