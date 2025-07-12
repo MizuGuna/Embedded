@@ -33,7 +33,7 @@ def push_to_sheet(data_batch):
     sheet.append_rows(data_batch)
     print(f"Pushed {len(data_batch)} rows to Google Sheets.")
 
-    maintain_sheet_limit(sheet, 155)
+    maintain_sheet_limit(sheet, 5000)
 
 # === Delete old data from Google sheets ===
 def maintain_sheet_limit(sheet, max_rows=5000, batch=100):
