@@ -5,26 +5,30 @@
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 
-/**
- * @file gps.h
- * @brief Interface for GPS module.
- */
+// Header file for GPS module interface
+// Provides functions for GPS initialization and position logging
+// Uses TinyGPS++ library for parsing NMEA GPS data
+// Integrates with compass module for complete position and heading data
 
-/** @brief Global GPS object */
+// External declaration of global GPS parser object
+// Actual object is defined in gps.cpp
 extern TinyGPSPlus gps;
-/** @brief Software serial for GPS communication */
+
+// External declaration of software serial interface for GPS communication
+// Configured with pins defined in pins.h
 extern SoftwareSerial ss;
 
-/**
- * @brief Initializes the GPS module.
- */
+// Function to initialize GPS module communication
+// Sets up software serial communication with GPS module
+// Must be called before attempting to read GPS data
 void initGPS();
 
-/**
- * @brief Logs current GPS position and heading to a string.
- * @param[out] outMsg Output string.
- * @return false if location is invalid, true otherwise.
- */
+// Function to create a formatted path point message
+// Combines current GPS coordinates with compass heading
+// Output parameter 'outMsg' contains formatted CSV string if successful
+// Returns false if GPS location is invalid (no satellite fix)
+// Returns true if valid location data is available and message is created
+// Message format: "PATH,latitude,longitude,heading"
 bool logPathPoint(String& outMsg);
 
 #endif
