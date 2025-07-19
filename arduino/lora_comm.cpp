@@ -39,23 +39,23 @@ void initLoRa() {
  */
 bool sendMessage(const String& msg) {
     int msg_len = msg.length();
-    int pad_len = 16 - (msg_len % 16);
+    int pad_len = 16 - (msg_len % 16); //Calculates length of padding to make message multiples of 16
     int total_len = msg_len + pad_len;
 
-    byte padded_msg[total_len];
+    byte padded_msg[total_len]; //Adds the padding to message
 
     for (int i = 0; i < msg_len; i++) {
         padded_msg[i] = msg[i];
     }
 
     for (int i = 0; i < pad_len; i++) {
-        padded_msg[msg_len + i] = pad_len;
+        padded_msg[msg_len + i] = pad_len; //Inserts the pad length as extra padding
     }
 
-    byte cipher[total_len];
+    byte cipher[total_len]; //Stores encrypted code
 
     for (int i = 0; i < total_len; i += 16) {
-        aes.encryptBlock(cipher + i, padded_msg + i);
+        aes.encryptBlock(cipher + i, padded_msg + i); //Encrypt block by block
     }
     
     LoRa.beginPacket();

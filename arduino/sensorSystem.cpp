@@ -59,10 +59,10 @@ String getSensorDataString() {
   float tds = readTDS();
   int orp = readORP();
 
-  String data = "Temp:" + String(temperature, 2) + "C";
+  String data = "Temp:" + String(temperature, 2);
   data += " | pH:" + String(pH, 2);
-  data += " | TDS:" + String(tds, 1) + "ppm";
-  data += " | ORP:" + String(orp) + "mV";
+  data += " | TDS:" + String(tds, 1);
+  data += " | ORP:" + String(orp);
 
   return data;
 }

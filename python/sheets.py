@@ -9,7 +9,7 @@ BUFFER = []
 LAST_PUSH_TIME = time.time()
 PUSH_INTERVAL_SECONDS = 60
 MAX_BUFFER = 20
-SERIAL_PORT = "COM5"
+SERIAL_PORT = "COM10"
 BAUD_RATE = 9600
 SPREADSHEET_ID = "1UYoE7HpYE_xK2-5zKpek_TazQJzAFXdvs_ojRwo6ctg"
 
@@ -33,7 +33,7 @@ def push_to_sheet(data_batch):
     sheet.append_rows(data_batch)
     print(f"Pushed {len(data_batch)} rows to Google Sheets.")
 
-    maintain_sheet_limit(sheet, 5000)
+    maintain_sheet_limit(sheet, 120)
 
 # === Delete old data from Google sheets ===
 def maintain_sheet_limit(sheet, max_rows=5000, batch=100):
